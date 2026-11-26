@@ -35,9 +35,13 @@ class Tests(unittest.TestCase):
         p=self.fixture(); (p/'.env').write_text('TOKEN=test'); r=subprocess.run([sys.executable,str(SCRIPT),'install',str(p),'--approved'],env=self.env,capture_output=True,text=True); self.assertNotEqual(r.returncode,0); self.assertFalse((self.shared/'sample').exists())
     def test_project_isolation(self):
         p=self.fixture(root=self.base/'project'/'.agents/skills'); self.call("from manager import *; c=read(ROOT/'config.json',{}); c['projects']=[str(P(os.environ['HOME']).parent/'project')]; write(ROOT/'config.json',c)"); out=self.cli('sync','--approve-import'); self.assertEqual(out['records'],[]); self.assertTrue(any(x['event']=='project-local' for x in out['events']))
-    def test_git_two_devices(self):
-        remote=self.base/'remote.git'; subprocess.run(['git','init','--bare',str(remote)],check=True,capture_output=True); self.call("from manager import *; import shutil; p=ROOT/'library'; run('git','clone',str(P(os.environ['HOME']).parent/'remote.git'),str(p));")
-        p=self.fixture(); self.cli('install',str(p),'--approved'); self.env['SKILL_MANAGER_HOME']=str(self.base/'second'); self.call("from manager import *; ROOT.mkdir(); run('git','clone',str(P(os.environ['HOME']).parent/'remote.git'),str(ROOT/'library')); write(ROOT/'config.json',{'shared':str(P(os.environ['HOME']).parent/'shared2')})"); out=self.cli('sync'); self.assertEqual(len(out['records']),1); self.assertTrue((self.base/'shared2'/'sample').is_symlink()); self.cli('delete','sample'); self.env['SKILL_MANAGER_HOME']=str(self.base/'manager'); self.cli('sync'); self.assertFalse((self.shared/'sample').exists())
+    def test_existing_git_library_does_not_sync(self):
+        repo=self.base/'manager'/'library'; repo.mkdir(parents=True)
+        subprocess.run(['git','init',str(repo)],check=True,capture_output=True)
+        subprocess.run(['git','-C',str(repo),'remote','add','origin',str(self.base/'missing.git')],check=True)
+        self.cli('install',str(self.fixture()),'--approved')
+        self.cli('sync')
+        self.assertEqual(subprocess.run(['git','-C',str(repo),'rev-parse','--verify','HEAD'],capture_output=True).returncode,128)
 if __name__=='__main__':
     import io
     stream=io.StringIO(); suite=unittest.defaultTestLoader.loadTestsFromTestCase(Tests); result=unittest.TextTestRunner(stream=stream,verbosity=2).run(suite); print(json.dumps({'mode':'isolated','total':result.testsRun,'passed':result.testsRun-len(result.failures)-len(result.errors),'failed':len(result.failures)+len(result.errors),'details':stream.getvalue(),'unverified':['real Agent discovery and invocation','native installation hooks','actual GitHub account','cross-device scheduler','cloud account integration']},ensure_ascii=False,indent=2)); sys.exit(not result.wasSuccessful())
