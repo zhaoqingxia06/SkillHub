@@ -68,17 +68,10 @@ class Manager:
     def save(self,r): write(self.meta/(valid(r['name'])+'.json'),r)
     def target(self,n): return self.repo/'skills'/valid(n)
     def pull(self):
-        if not (self.repo/'.git').exists(): return
-        if run('git','status','--porcelain',cwd=self.repo): raise RuntimeError('Uncommitted library changes; inspect before syncing')
-        run('git','fetch','origin',cwd=self.repo)
-        branch=run('git','branch','--show-current',cwd=self.repo)
-        refs=run('git','branch','-r',cwd=self.repo).splitlines()
-        if any(x.strip()=='origin/'+branch for x in refs): run('git','merge','--ff-only','origin/'+branch,cwd=self.repo)
+        # v0.4 is deliberately local-only, including for existing Git libraries.
+        return
     def push(self):
-        if not (self.repo/'.git').exists(): return
-        run('git','add','--all','--','.',cwd=self.repo)
-        if run('git','status','--porcelain',cwd=self.repo): run('git','commit','-m','SkillHub sync',cwd=self.repo)
-        if run('git','rev-list','--all','--count',cwd=self.repo) != '0': run('git','push','-u','origin','HEAD',cwd=self.repo)
+        return
     def collect(self,p,scope='global',project=None,approved=False):
         p=P(p); n=valid(p.name); h=inspect(p); r=self.records().get(n); dest=self.target(n)
         if scope!='global':
@@ -181,16 +174,7 @@ def setup(a):
     cfg['adapters']=sorted(set(cfg.get('adapters',[])+[str(P(x).expanduser().resolve()) for x in a.adapter]+[str(x) for x in candidates if x.is_dir()]))
     cfg['projects']=sorted(set(cfg.get('projects',[])+[str(P(x).expanduser().resolve()) for x in a.project]))
     if a.remote:
-        if not a.confirm_private: raise ValueError('Confirm that the repository is private and authorized using --confirm-private')
-        if not re.fullmatch(r'(https://github\.com/[^/\s]+/[^/\s]+(?:\.git)?|git@github\.com:[^/\s]+/[^/\s]+(?:\.git)?)',a.remote): raise ValueError('Use a GitHub repository URL without embedded credentials')
-        if cfg.get('remote') and cfg['remote']!=a.remote: raise ValueError('Remote already configured')
-        repo=ROOT/'library'
-        if not (repo/'.git').exists():
-            if repo.exists():
-                if any(x.is_file() or x.is_symlink() for x in repo.rglob('*')): raise ValueError('Existing local library: migrate manually before linking remote')
-                shutil.rmtree(repo)
-            run('git','clone',a.remote,str(repo))
-        cfg['remote']=a.remote
+        raise ValueError('v0.4 is local-only; remote setup is unavailable')
     write(ROOT/'config.json',cfg); m=Manager(); m.sync(a.approve_import); return m.status()
 def schedule(approved):
     if sys.platform=='win32':
