@@ -10,4 +10,4 @@
 请安装并初始化 SkillHub：https://github.com/zhaoqingxia06/SkillHub，按照 SKILL.md 执行并完成自检。
 ```
 
-[更新日志](CHANGELOG.md)
+
