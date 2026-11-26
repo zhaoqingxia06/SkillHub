@@ -42,8 +42,10 @@ python3 ~/.agents/skills/skill-manager/scripts/manager.py setup --remote https:/
 原生安装前后钩子无法在所有 Agent 强制执行；任意工具自动发现仍需适配；网页端无法通用地直接安装其他 Skill，仅提供授权动态读取/人工导入流程；真实 GitHub 和跨电脑调度尚未测试；修改版本需人工解决冲突。自检使用隔离测试目录及本地裸 Git 仓库，不会替代实际设备测试。
 
 ## V0.3 安装后自动展示目录
-每次由 Manager 处理安装后，Agent 必须根据实际 catalog 输出完整的简洁技能目录：总数、启用数、本次新增数，按全局/项目分组，标记新增、停用和未纳管项。可主动运行 `python3 scripts/manager.py catalog`。覆盖统一库及已配置本地目录，不代表所有云端账户或未知 Agent；定时任务不能主动在任意 Agent 的对话里显示消息。
+每次由 Manager 处理安装后，Agent 必须根据实际 catalog 输出完整的简洁技能目录：不展示顶部汇总数据或统计卡片；按全局/项目及来源分组，以紧凑表格展示完整技能名称，新增项加粗并标记 NEW，停用、未纳管等状态行内标注。可主动运行 `python3 scripts/manager.py catalog`。覆盖统一库及已配置本地目录，不代表所有云端账户或未知 Agent；定时任务不能主动在任意 Agent 的对话里显示消息。
 
 
 ## V0.3 changes
 Local-first initialization; GitHub is optional. Ask once whether cross-computer use is needed, configure a supplied and authorized destination only. Windows Task Scheduler registration added (requires real-device validation); macOS and Windows scheduled scans default to pending review. Existing Git metadata is excluded from import, not copied. Catalog includes provenance (self, third-party, modified, unknown); use `install PATH --approved --origin third-party --source-url URL` or `origin NAME self` for confirmed attribution. Existing skills without evidence remain unknown. Cloud-folder transport and migration of populated local libraries to GitHub are not implemented in this revision. Native install interception remains platform-dependent. V0.3 has not been executed in a real device environment yet.
+
+目录样式：直接展示「范围 / 来源 / Skill」三列表格；同组名称以中点分隔，省略空组，不使用单项卡片或顶部汇总数字，不截断目录。末尾仅在需要时注明同步模式或实际问题。
