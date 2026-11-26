@@ -1,0 +1,14 @@
+{
+  "mode": "isolated",
+  "total": 8,
+  "passed": 8,
+  "failed": 0,
+  "details": "test_catalog (__main__.Tests.test_catalog) ... ok\ntest_delete_restore_tombstone (__main__.Tests.test_delete_restore_tombstone) ... ok\ntest_duplicate_and_conflict (__main__.Tests.test_duplicate_and_conflict) ... ok\ntest_git_two_devices (__main__.Tests.test_git_two_devices) ... ok\ntest_install_and_share (__main__.Tests.test_install_and_share) ... ok\ntest_project_isolation (__main__.Tests.test_project_isolation) ... ok\ntest_scan_and_adopt (__main__.Tests.test_scan_and_adopt) ... ok\ntest_sensitive (__main__.Tests.test_sensitive) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 23.748s\n\nOK\n",
+  "unverified": [
+    "real Agent discovery and invocation",
+    "native installation hooks",
+    "actual GitHub account",
+    "cross-device scheduler",
+    "cloud account integration"
+  ]
+}
