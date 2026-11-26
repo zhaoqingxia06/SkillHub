@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local-first Skill Manager. Python 3.9+, Git optional for local-only mode."""
+"""Local-first SkillHub. Python 3.9+, Git optional for local-only mode."""
 import argparse, hashlib, json, os, pathlib, re, shutil, subprocess, sys, tempfile, time, uuid, plistlib
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -77,7 +77,7 @@ class Manager:
     def push(self):
         if not (self.repo/'.git').exists(): return
         run('git','add','--all','--','.',cwd=self.repo)
-        if run('git','status','--porcelain',cwd=self.repo): run('git','commit','-m','Skill Manager sync',cwd=self.repo)
+        if run('git','status','--porcelain',cwd=self.repo): run('git','commit','-m','SkillHub sync',cwd=self.repo)
         if run('git','rev-list','--all','--count',cwd=self.repo) != '0': run('git','push','-u','origin','HEAD',cwd=self.repo)
     def collect(self,p,scope='global',project=None,approved=False):
         p=P(p); n=valid(p.name); h=inspect(p); r=self.records().get(n); dest=self.target(n)
@@ -130,10 +130,10 @@ class Manager:
             if not root.is_dir(): continue
             for p in sorted(root.iterdir()):
                 if not (p/'SKILL.md').is_file(): continue
-                if p.is_symlink() or p.name=='skill-manager': continue # never ingest unknown link targets or manager itself
+                if p.is_symlink() or p.name in ('skillhub','skill-manager'): continue # never ingest unknown link targets or manager itself
                 try:
                     result=self.collect(p,approved=approved)
-                    if approved and p.name!='skill-manager' and result in ('added','duplicate'): self.adopt(p)
+                    if approved and p.name not in ('skillhub','skill-manager') and result in ('added','duplicate'): self.adopt(p)
                 except (ValueError,OSError) as e: self.log('scan-blocked',path=str(p),error=str(e))
         for path in self.cfg.get('projects',[]):
             root=P(path).expanduser()
@@ -151,7 +151,7 @@ class Manager:
         if url and not re.fullmatch(r'https://[\w.-]+/[\w./-]+',url): raise ValueError('Use a public source URL without credentials or query')
         r=self.records()[valid(n)]; r['origin']={'kind':kind,'url':url,'evidence':'user or installation workflow confirmed'}; self.save(r)
     def state(self,n,state):
-        if n=='skill-manager': raise ValueError('Manage Skill Manager itself manually')
+        if n in ('skillhub','skill-manager'): raise ValueError('Manage SkillHub itself manually')
         self.pull(); r=self.records()[valid(n)]; r.update(state=state,updated=now()); self.save(r); self.expose(); self.push(); self.log('state',name=n,state=state)
     def catalog(self):
         """Local inventory, not a claim of native Agent discovery."""
